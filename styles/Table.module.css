@@ -1,0 +1,9 @@
+.title {
+  display: inline-block;
+  background: lightblue;
+  padding: 0 6px;
+}
+
+.routes {
+  margin-top: 20px;
+}
