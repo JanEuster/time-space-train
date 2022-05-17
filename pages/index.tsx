@@ -3,14 +3,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import styles from '../styles/Home.module.css'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, MutableRefObject } from 'react'
 import { faSquareMinus, faSquarePlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain } from "../components/Timetable"
 
 const ListItem = ({ data, changeTitle, deleteItem }) => {
   let { title, id } = data;
-  const ref = useRef()
+  const ref = useRef<HTMLInputElement>(null)
   return (
     <Link href={"/tables/" + id}>
       <li>
@@ -27,7 +27,7 @@ export default function Home() {
 
   const addListItem = () => {
     console.log(minId)
-    setList([...list, createTimetable(minId, "new")]);
+    setList([...list, createTimetable(minId, "new", [], [])]);
     setMinId(minId + 1);
   }
 
