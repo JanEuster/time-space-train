@@ -6,6 +6,7 @@ import styles from '../styles/Home.module.css'
 import { useState, useRef, useEffect } from 'react'
 import { faSquareMinus, faSquarePlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain } from "../components/Timetable"
 
 const ListItem = ({ data, changeTitle, deleteItem }) => {
   let { title, id } = data;
@@ -25,16 +26,16 @@ export default function Home() {
   let [minId, setMinId] = useState(0);
 
   const addListItem = () => {
-    setList([...list, { title: "new", id: minId }]);
+    console.log(minId)
+    setList([...list, createTimetable(minId, "new")]);
     setMinId(minId + 1);
   }
 
-  const changeTitle = (id, value) => {
+  const changeTitle = (id, newTitle) => {
     for (let index = 0; index < list.length; index++) {
       let item = list[index];
       if (item.id === id) {
-        item.title = value;
-        setList([...list.slice(0, index), item, ...list.slice(index + 1, list.length)])
+        setList([...list.slice(0, index), changeTimetable(item, newTitle, item.stations, item.trains), ...list.slice(index + 1, list.length)])
         break
       }
     }
@@ -82,7 +83,7 @@ export default function Home() {
         </div>
         <ul className={styles.list}>
           {list.map((item, index) => {
-            return <ListItem key={index} data={item} changeTitle={changeTitle} deleteItem={deleteItem} />
+            return <ListItem key={item.id} data={item} changeTitle={changeTitle} deleteItem={deleteItem} />
           })}
         </ul>
       </div>

@@ -1,45 +1,61 @@
 
-class Station {
-  constructor(name, short) {
-    this.name = name;
-    this.short = short;
+const createTimetable = (id, title, stations = [], trains = []) => {
+  return {
+    id: id,
+    title: title,
+    stations: stations,
+    trains: trains,
   }
 }
-
-class Trip {
-  constructor(stationA, stationB, duration) {
-    this.A = stationA;
-    this.B = stationB;
-    this.duration = duration;
-  }
+const changeTimetable = (table, title, stations, trains) => {
+  return createTimetable(table.id, title, stations, trains)
 }
 
-class Train {
-  constructor(id, stations, durations) {
-    this.id = id;
-    this.stations = stations;
-    this.durations = durations;
-    this.trips = [];
-    this.generateTrips();
+const createStation = (name, short) => {
+  return {
+    name: name,
+    short: short,
   }
-
-  generateTrips() {
-    for (let i = 0; i < this.durations; i++) {
-      this.trips.push(new Trip(this.stations[i], this.stations[i + 1], this.durations[i]))
-    }
-  }
-
+}
+const addStations = (table, stations) => {
+  table.stations = [table.stations, ...stations]
+}
+const changeStation = (station, name, short) => {
+  return createStation(name, short);
 }
 
-class Timetable {
-  constructor(title, id) {
-    this.title = title;
-    this.id = id;
-
-    this.stations = [];
-    this.routes = [];
+const createTrip = (A, B, duration) => {
+  return {
+    A: A,
+    B: B,
+    duration: duration,
   }
-
+}
+const changeTrip = (A, B, duration) => {
+  return createTrip(A, B, duration)
 }
 
-export default Timetable
+
+const createTrain = (id, startTime, stations, durations) => {
+  return {
+    id: id,
+    startTime: startTime,
+    stations: stations,
+    durations: durations,
+    trips: (() => {
+      let trips = []
+      for (let i = 0; i < this.durations; i++) {
+        trips.push(new Trip(this.stations[i], this.stations[i + 1], this.durations[i]))
+      }
+      return trips
+    })(),
+  }
+}
+const addTrain = (train) => {
+  table.trains.push(train)
+}
+const changeTrain = (train, startTime, stations, durations) => {
+  return createTrain(train.id, startTime, stations, durations)
+}
+
+export { createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain }
