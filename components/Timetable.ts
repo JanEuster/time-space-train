@@ -6,7 +6,7 @@ interface Station {
 
 interface ITrain {
   id: string,
-  startTime: string,
+  startTime: Date,
   stations: Array<Station>,
   durations: Array<Number>,
 }
@@ -18,7 +18,7 @@ interface Trip {
 }
 interface Train {
   id: string,
-  startTime: string,
+  startTime: Date,
   stations: Array<Station>,
   durations: Array<Number>,
   trips: Array<Trip>,
@@ -69,7 +69,7 @@ const changeTrip = (A: Station, B: Station, duration: Number) => {
 }
 
 
-const createTrain = (id: string, startTime: string, stations: Array<Station>, durations: Array<Number>): Train => {
+const createTrain = (id: string, startTime: Date, stations: Array<Station>, durations: Array<Number>): Train => {
   let trips = []
   for (let i = 0; i < durations.length; i++) {
     trips.push(createTrip(stations[i], stations[i + 1], durations[i]))
@@ -85,7 +85,7 @@ const createTrain = (id: string, startTime: string, stations: Array<Station>, du
 const addTrain = (table: Timetable, train: Train) => {
   table.trains.push(train)
 }
-const changeTrain = (train: Train, startTime: string, stations: Array<Station>, durations: Array<Number>) => {
+const changeTrain = (train: Train, startTime: Date, stations: Array<Station>, durations: Array<Number>) => {
   return createTrain(train.id, startTime, stations, durations)
 }
 
