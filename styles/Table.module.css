@@ -7,3 +7,86 @@
 .routes {
   margin-top: 20px;
 }
+
+.stations,
+.trains {
+  min-width: min(200px, 80vw);
+  width: 70vw;
+  max-width: 800px;
+  margin-bottom: 30px;
+}
+
+.station {
+  margin-top: 5px;
+  width: 100%;
+  height: 35px;
+  background: lightblue;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+}
+
+.route {
+  margin-top: 5px;
+  width: calc(100% - 10px);
+  list-style: none;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-left: auto;
+}
+
+.routeStations {
+  width: 100%;
+}
+
+.routeStations>li {
+  background: rgb(131, 195, 216);
+  height: 40px;
+  font-size: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.routeDuration {
+  border-left: dashed 3px black;
+  height: 25px;
+  margin: 5px 0;
+  margin-left: 20px;
+  width: 90%;
+}
+
+.routeDuration input {
+  outline: 2px dotted rgba(0, 0, 0, 0.497);
+  width: 50px;
+  text-align: right;
+  background: rgba(0, 0, 0, 0.086);
+}
+
+.routeDuration input:focus {
+  padding: 0;
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+  margin-left: 10px;
+  margin-top: 5px;
+}
+
+.trainHead {
+  height: 30px;
+  background: lightblue;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.short {
+  width: 70px;
+  font-size: 18px;
+  font-weight: 400;
+}

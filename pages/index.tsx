@@ -26,7 +26,6 @@ export default function Home() {
   let [minId, setMinId] = useState(0);
 
   const addListItem = () => {
-    console.log(minId)
     setList([...list, createTimetable(minId, "new", [], [])]);
     setMinId(minId + 1);
   }

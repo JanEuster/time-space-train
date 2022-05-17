@@ -13,3 +13,49 @@ a {
 * {
   box-sizing: border-box;
 }
+
+*::selection {
+  background: rgba(0, 0, 0, 0.145);
+}
+
+input,
+select {
+  margin-left: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: bold;
+  outline: none;
+}
+
+input {
+  width: 160px;
+  user-select: none;
+
+  z-index: 100;
+}
+
+select {
+  background: lightblue;
+}
+
+
+select:hover,
+input:hover {
+  outline: 1px solid black;
+  background: rgba(0, 0, 0, 0.158);
+}
+
+input:focus {
+  background: rgb(109, 170, 190);
+  padding: 2px;
+}
+
+select:focus {
+  background: lightblue;
+}
+
+select>* {
+  background: white;
+}

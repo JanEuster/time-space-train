@@ -1,12 +1,12 @@
 
 interface Station {
-  name: String,
-  short: String,
+  name: string,
+  short: string,
 }
 
 interface ITrain {
-  id: String,
-  startTime: Number,
+  id: string,
+  startTime: string,
   stations: Array<Station>,
   durations: Array<Number>,
 }
@@ -16,19 +16,23 @@ interface Trip {
   B: Station,
   duration: Number,
 }
-interface Train extends ITrain {
-  trips: Array<Trip>
+interface Train {
+  id: string,
+  startTime: string,
+  stations: Array<Station>,
+  durations: Array<Number>,
+  trips: Array<Trip>,
 }
 interface Timetable {
   table: Station
   id: Number,
-  title: String,
+  title: string,
   stations: Array<Station>,
   trains: Array<Train>,
 }
 
 
-const createTimetable = (id: Number, title: String, stations: Array<Station>, trains: Array<Train>) => {
+const createTimetable = (id: Number, title: string, stations: Array<Station>, trains: Array<Train>) => {
   return {
     id: id,
     title: title,
@@ -36,11 +40,11 @@ const createTimetable = (id: Number, title: String, stations: Array<Station>, tr
     trains: trains,
   }
 }
-const changeTimetable = (table: Timetable, title: String, stations: Array<Station>, trains: Array<Train>) => {
+const changeTimetable = (table: Timetable, title: string, stations: Array<Station>, trains: Array<Train>) => {
   return createTimetable(table.id, title, stations, trains)
 }
 
-const createStation = (name: String, short: String) => {
+const createStation = (name: string, short: string) => {
   return {
     name: name,
     short: short,
@@ -49,11 +53,11 @@ const createStation = (name: String, short: String) => {
 const addStations = (table: Timetable, stations: Array<Station>) => {
   table.stations = [...table.stations, ...stations]
 }
-const changeStation = (station: Object, name: String, short: String) => {
+const changeStation = (station: Object, name: string, short: string) => {
   return createStation(name, short);
 }
 
-const createTrip = (A: Station, B: Station, duration: Number) => {
+const createTrip = (A: Station, B: Station, duration: Number): Trip => {
   return {
     A: A,
     B: B,
@@ -65,26 +69,27 @@ const changeTrip = (A: Station, B: Station, duration: Number) => {
 }
 
 
-const createTrain = (id: String, startTime: Object, stations: Array<Station>, durations: Array<Number>) => {
+const createTrain = (id: string, startTime: string, stations: Array<Station>, durations: Array<Number>): Train => {
+  let trips = []
+  for (let i = 0; i < durations.length; i++) {
+    trips.push(createTrip(stations[i], stations[i + 1], durations[i]))
+  }
   return {
     id: id,
     startTime: startTime,
     stations: stations,
     durations: durations,
-    trips: (() => {
-      let trips = []
-      for (let i = 0; i < durations.length; i++) {
-        trips.push(createTrip(stations[i], stations[i + 1], durations[i]))
-      }
-      return trips
-    })(),
+    trips: trips,
   }
 }
 const addTrain = (table: Timetable, train: Train) => {
   table.trains.push(train)
 }
-const changeTrain = (train: Train, startTime: Number, stations: Array<Station>, durations: Array<Number>) => {
+const changeTrain = (train: Train, startTime: string, stations: Array<Station>, durations: Array<Number>) => {
   return createTrain(train.id, startTime, stations, durations)
 }
 
-export { createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain }
+export {
+  createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain,
+}
+export type { Station, ITrain, Train, Timetable }

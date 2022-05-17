@@ -26,29 +26,6 @@
   position: relative;
 }
 
-.list li input {
-  width: 160px;
-  margin-left: 20px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: bold;
-  user-select: none;
-
-  z-index: 100;
-}
-
-.list li input:hover {
-  outline: 1px solid black;
-  background: rgba(0, 0, 0, 0.158);
-}
-
-.list li input:focus {
-  background: rgb(109, 170, 190);
-  padding: 2px;
-  outline: none;
-}
 
 .listIcon {
   width: 20px;
