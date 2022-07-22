@@ -6,7 +6,7 @@ import styles from '../styles/Home.module.css'
 import { useState, useRef, useEffect, MutableRefObject } from 'react'
 import { faSquareMinus, faSquarePlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { createTimetable, changeTimetable, addStations, createStation, changeStation, addTrain, createTrain, changeTrain } from "../components/Timetable"
+import { createTimetable } from "../components/types"
 
 const ListItem = ({ data, changeTitle, deleteItem }) => {
   let { title, id } = data;
@@ -34,7 +34,7 @@ export default function Home() {
     for (let index = 0; index < list.length; index++) {
       let item = list[index];
       if (item.id === id) {
-        setList([...list.slice(0, index), changeTimetable(item, newTitle, item.stations, item.trains), ...list.slice(index + 1, list.length)])
+        setList([...list.slice(0, index), createTimetable(item, newTitle, item.stations, item.trains), ...list.slice(index + 1, list.length)])
         break
       }
     }

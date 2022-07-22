@@ -10,8 +10,8 @@ import { addMinutes, format } from "date-fns"
 import styles from "../../../styles/Home.module.css"
 import styles2 from "../../../styles/Table.module.css"
 import "../../../styles/Table.module.css"
-import { ITrain, Station, Train } from '../../../components/Timetable';
-import { createTimetable, changeTimetable, createStation, changeStation, createTrain, changeTrain } from "../../../components/Timetable"
+import { TrainWithTrips, Station, Train, Timetable, defaultTimeTable, stationIdent } from '../../../components/types';
+import { createTimetable, createStation, createTrain } from "../../../components/types"
 
 const Station = ({ name, short, changeStation, removeStation }) => {
   const mainRef = useRef(null);
@@ -47,8 +47,8 @@ const Stations = ({ stations, setStations, table }) => {
   }
   const removeStation = (shortIdent) => {
     for (let i = 0; i < stations.length; i++) {
-      let s = stations[i];
-      if (s.short === shortIdent) {
+      let s: Station = stations[i];
+      if (s.ident === shortIdent) {
         setStations([...stations.slice(0, i), ...stations.slice(i + 1, stations.length)]);
         break
       }
@@ -67,11 +67,6 @@ const Stations = ({ stations, setStations, table }) => {
     setStations(updatedList);
   };
 
-  useEffect(() => {
-    if (stations.length === 0) {
-      setStations([...stations, createStation("A Station", "A"), createStation("B Station", "B")])
-    }
-  })
   return (
     <div className="stations">
       <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={() => { addStation() }} />
@@ -91,7 +86,7 @@ const Stations = ({ stations, setStations, table }) => {
                         {...provided.dragHandleProps}
                         {...provided.draggableProps}
                       >
-                        <Station name={s.name} short={s.short} changeStation={changeStation} removeStation={removeStation} />
+                        <Station name={s.name} short={s.ident} changeStation={changeStation} removeStation={removeStation} />
                       </div>
                     )}
                   </Draggable>
@@ -106,11 +101,34 @@ const Stations = ({ stations, setStations, table }) => {
   )
 }
 
-const Train = ({ id, startTime, stations, durations }) => {
+const TrainStation = ({ ident, time, stationIdents }: { ident: stationIdent, time: string, stationIdents: stationIdent[] }) => {
+  console.log(ident)
+  return (
+    <div key={ident} className="w100">
+      <li>
+        <div className="h100">
+          <h6>
+            {time}
+          </h6>
+          <select defaultValue={ident}>
+            {stationIdents.map((stationIdent, j) =>
+              ident == stationIdent ?
+                <option key={j} value={stationIdent}>
+                  {stationIdent}
+                </option>
+                : null
+            )}
+          </select>
+        </div>
+      </li>
+    </div>
+  )
+}
+const Train = ({ id, startTime, stations, durations }: Train) => {
   const ref = useRef<HTMLInputElement>();
 
-  const addAllMinutes = (index: Number) => {
-    let time = startTime;
+  const addAllMinutes = (index: number): Date => {
+    let time = new Date(startTime);
     for (let i = 0; i < index; i++) {
       time = addMinutes(time, durations[i]);
     }
@@ -121,46 +139,25 @@ const Train = ({ id, startTime, stations, durations }) => {
     <div className={styles2.trains}>
       <div className={styles2.trainHead}>
         <input ref={ref} defaultValue={id} onChange={() => { }} onClick={(e) => { }} />
-        <input ref={ref} defaultValue={format(startTime, "HH:mm")} onChange={() => { }} onClick={(e) => { }} className={styles2.short} />
+        <input ref={ref} defaultValue={format(new Date(startTime), "HH:mm")} onChange={() => { }} onClick={(e) => { }} className={styles2.short} />
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { }} />
       </div>
       <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={(e) => { }} />
       <div className={styles2.route}>
         <ol className={styles2.routeStations}>
-          {stations.map((s: Station, i) => {
-            return (
-              <div key={i} className="w100">
-                <li>
-                  <div className="h100">
-                    <h6>
-                      {i === 0 ? format(startTime, "HH:mm") : format(addAllMinutes(i), "HH:mm")}
-                    </h6>
-                    <select>
-                      {stations.map((st: Station, j) => {
-                        if (st === s) {
-                          return (
-                            <option key={j} defaultValue={st.short}>
-                              {st.short}
-                            </option>
-                          )
-                        }
-                        return (
-                          <option key={j} value={st.short}>
-                            {st.short}
-                          </option>
-                        )
-                      })}
-                    </select>
-                  </div>
-                </li>
-                {i < stations.length - 1 ?
-                  <div className={styles2.routeDuration}>
-                    <input defaultValue={durations[i]}></input> min
-                  </div>
-                  : null
-                }
-              </div>
-            )
+          {stations.map((s, i) => {
+            let duration = null;
+            if (i < stations.length - 1) {
+              duration = (
+                <div className={styles2.routeDuration}>
+                  <input defaultValue={durations[i]}></input> min
+                </div>
+              );
+            }
+            return <>
+              <TrainStation ident={s} time={format(addAllMinutes(i), "HH:mm")} stationIdents={stations} />
+              {duration}
+            </>
           })}
         </ol>
       </div>
@@ -169,11 +166,11 @@ const Train = ({ id, startTime, stations, durations }) => {
 }
 
 const Trains = ({ trains, setTrains, table }) => {
-  let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), [createStation("A Station", "A"), createStation("B Station", "B"), createStation("C Station", "C")], [70, 30])]
+  // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
     <>
       <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={() => { }} />
-      {ttt.map((t: Train) => {
+      {trains.map((t: Train) => {
         return <Train key={t.id} id={t.id} startTime={t.startTime} stations={t.stations} durations={t.durations} />
       })}
     </>
@@ -184,38 +181,54 @@ const Trains = ({ trains, setTrains, table }) => {
 const Table = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [table, setTable] = useState(null);
+  // const [table, setTable] = useState<Timetable>(defaultTimeTable());
+  const [table, setTable] = useState<Timetable | null>(null);
 
-  const [stations, setStations] = useState([]);
-  const [trains, setTrains] = useState([]);
+  const setStations = (stations: Station[]) => {
+    setTable(createTimetable(table.id, table.title, stations, table.trains))
+  }
 
+  const setTrains = (trains: Train[]) => {
+    setTable(createTimetable(table.id, table.title, table.stations, trains))
+  }
   useEffect(() => {
+    let defaultStations: Array<Station> = [createStation("A Station", "A"), createStation("B Station", "B")];
+    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])];
     // first time load tables data
-    let tables = JSON.parse(localStorage.getItem("tables"))
+    let tables = JSON.parse(localStorage.getItem("tables"));
     for (let i = 0; i < tables.length; i++) {
-      let item = tables[i];
-      if (item.id == id) {
+      let item: Timetable = tables[i];
+      console.log(item)
+      console.log(item.id, id)
+      if (item.id == Number(id)) {
         setTable(item);
+        if (item.stations.length == 0) {
+          setTable(createTimetable(item.id, item.title, defaultStations, item.trains));
+        }
+        if (item.trains.length == 0) {
+          setTable(createTimetable(item.id, item.title, defaultStations, defaultTrains));
+        }
+        console.log("table set")
       }
     }
+  }, [router.isReady])
 
-  }, [id])
 
   useEffect(() => {
     // save stations & trains changes
     let tables = JSON.parse(localStorage.getItem("tables"))
     for (let i = 0; i < tables.length; i++) {
       let item = tables[i];
-      if (item.id == id) {
-        item.stations = stations;
-        item.trains = trains;
+      if (item.id == id && table) {
+        item.stations = table.stations;
+        item.trains = table.trains;
         tables[i] = item
         localStorage.setItem("tables", JSON.stringify(tables))
       }
     }
-  }, [stations, trains])
+  }, [table])
 
-  return (
+  return table ? (
     <div className={styles2.container}>
       <div>
         <Link href="/">
@@ -228,14 +241,14 @@ const Table = () => {
         <h1 className={styles2.title}>{table?.title ?? ""}</h1>
 
         <h2 className={styles2.routes}>Stations</h2>
-        <Stations stations={stations} setStations={setStations} table={table} />
+        <Stations stations={table.stations} setStations={setStations} table={table} />
 
         <h2 className={styles2.routes}>Trains</h2>
-        <Trains trains={trains} setTrains={setTrains} table={table} />
+        <Trains trains={table.trains} setTrains={setTrains} table={table} />
 
       </div>
     </div>
-  )
+  ) : null
 }
 
 export default Table;
