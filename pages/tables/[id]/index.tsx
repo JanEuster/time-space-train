@@ -107,24 +107,65 @@ const Stations = ({ setStations, table }: { setStations: Function, table: Timeta
   )
 }
 
-const TrainStation = ({ ident, time, setTrainStations, allStations }: { ident: stationIdent, time: string, setTrainStations: Function, allStations: Station[] }) => {
+const TrainStation = ({ index, ident, time, train, setTrainStations, allStations }: { index: number, ident: stationIdent, time: string, train: Train, setTrainStations: Function, allStations: Station[] }) => {
+  let tsIndex = index;
+
+  const setTrainStationIdents = (idents: stationIdent[]) => {
+    setTrainStations(
+      idents,
+      train.durations
+    );
+  }
+  const setTrainStationDurations = (durations: number[]) => {
+    setTrainStations(
+      train.stations,
+      durations
+    );
+  }
+
+  const changeTSIdent = (e: ChangeEvent<HTMLSelectElement>) => {
+    setTrainStationIdents([...train.stations.slice(0, tsIndex), e.target.value, ...train.stations.slice(tsIndex+1)])
+  }
+  const changeDuration = (e: ChangeEvent<HTMLInputElement>) => {
+    setTrainStationDurations([...train.durations.slice(0, tsIndex), Number(e.target.value), ...train.durations.slice(tsIndex+1)])
+  }
+  const removeStation = () => { 
+    // same trick as with removeTrain
+    setTrainStations([], []);
+    setTimeout(() => {
+      setTrainStations(
+        [...train.stations.slice(0, tsIndex), ...train.stations.slice(tsIndex+1)],
+        [...train.durations.slice(0, tsIndex), ...train.durations.slice(tsIndex+1)]
+        );
+    }, 10)
+  }
   return (
-    <div key={ident} className="w100">
-      <li>
-        <div className="h100">
-          <h6>
-            {time}
-          </h6>
-          <select defaultValue={ident}>
-            {allStations.map((station, j) =>
-              <option key={j} value={station.ident}>
-                {station.ident}
-              </option>
-            )}
-          </select>
+    <>
+      <div key={ident} className="w100">
+        <li>
+          <div className="h100">
+            <h6>
+              {time}
+            </h6>
+            <select defaultValue={ident} onChange={(e) => changeTSIdent(e)}>
+              {allStations.map((station, j) =>
+                <option key={j} value={station.ident}>
+                  {station.ident}
+                </option>
+              )}
+            </select>
+          </div>
+            <FontAwesomeIcon icon={faSquareMinus} className={styles2.icon} onClick={removeStation} />
+        </li>
+      </div>
+      {
+        tsIndex < train.stations.length - 1 ?
+        <div className={styles2.routeDuration}>
+          <input defaultValue={train.durations[tsIndex]} onChange={(e) => changeDuration(e)}></input> min
         </div>
-      </li>
-    </div>
+        : null
+      }
+    </>
   )
 }
 
@@ -160,7 +201,6 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
             return
           }
         }
-        console.log("abc")
         let index = table.trains.indexOf(train);
         try {
           let newTrain = createTrain(id, newStartTime, stations, durations);
@@ -181,6 +221,19 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
   }
 
+  const removeTrain = () => {
+    // trains is set to an empty array for a short while because this fixes react rendering the changes incorrectly
+    // without it rerendering fucks up? the last trains gets removed visually while data gets modified correctly
+    setTrains([])
+    setTimeout(() => {
+      setTrains([...table.trains.slice(0, trainIndex), ...table.trains.slice(trainIndex+1)]);
+    }, 10)
+  }
+
+  const addTrainStation = () => {
+    setTrainStations([...stations, table.stations[0].ident], [...durations, 0])
+  }
+
   const addAllMinutes = (index: number): Date => {
     let time = new Date(startTime);
     for (let i = 0; i < index; i++) {
@@ -195,25 +248,14 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
         <input defaultValue={id} onBlur={changeTrainId} />
         <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime} 
         onBlur={(e) => changeTrainStartTime(e, true)}className={styles2.short} />
-        <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { }} />
+        <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
-      <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={(e) => { }} />
+      <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={addTrainStation} />
       <div className={styles2.route}>
         <ol className={styles2.routeStations}>
-          {stations.map((s, i) => {
-            let duration = null;
-            if (i < stations.length - 1) {
-              duration = (
-                <div className={styles2.routeDuration}>
-                  <input defaultValue={durations[i]}></input> min
-                </div>
-              );
-            }
-            return <>
-              <TrainStation key={i} ident={s} time={format(addAllMinutes(i), "HH:mm")} setTrainStations={setTrainStations} allStations={table.stations} />
-              {duration}
-            </>
-          })}
+          {stations.map((s, i) => 
+              <TrainStation key={i} index={i} ident={s} time={format(addAllMinutes(i), "HH:mm")} setTrainStations={setTrainStations} train={train} allStations={table.stations} />
+          )}
         </ol>
       </div>
     </div>
@@ -222,10 +264,14 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
 
 const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable }) => {
   let trains = table.trains;
+
+  const addTrain = () => {
+    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [])])
+  }
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
     <>
-      <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={() => { }} />
+      <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={addTrain} />
       {trains.map((t: Train, i) => {
         return <Train key={i} train={t} setTrains={setTrains} table={table} />
       })}
@@ -249,7 +295,7 @@ const Table = () => {
   }
   useEffect(() => {
     let defaultStations: Array<Station> = [createStation("A Station", "A"), createStation("B Station", "B")];
-    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])];
+    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70])];
     // first time load tables data
     let tables = JSON.parse(localStorage.getItem("tables"));
     for (let i = 0; i < tables.length; i++) {
