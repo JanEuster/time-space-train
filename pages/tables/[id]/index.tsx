@@ -181,6 +181,15 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
   }
 
+  const removeTrain = () => {
+    // trains is set to an empty array for a short while because this fixes react rendering the changes incorrectly
+    // without it rerendering fucks up? the last trains gets removed visually while data gets modified correctly
+    setTrains([])
+    setTimeout(() => {
+      setTrains([...table.trains.slice(0, trainIndex), ...table.trains.slice(trainIndex+1)]);
+    }, 10)
+  }
+
   const addAllMinutes = (index: number): Date => {
     let time = new Date(startTime);
     for (let i = 0; i < index; i++) {
@@ -195,7 +204,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
         <input defaultValue={id} onBlur={changeTrainId} />
         <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime} 
         onBlur={(e) => changeTrainStartTime(e, true)}className={styles2.short} />
-        <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { }} />
+        <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
       <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={(e) => { }} />
       <div className={styles2.route}>
@@ -222,10 +231,14 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
 
 const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable }) => {
   let trains = table.trains;
+
+  const addTrain = () => {
+    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [])])
+  }
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
     <>
-      <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={() => { }} />
+      <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={addTrain} />
       {trains.map((t: Train, i) => {
         return <Train key={i} train={t} setTrains={setTrains} table={table} />
       })}
