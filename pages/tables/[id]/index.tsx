@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from "next/router";
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, ChangeEvent } from 'react'
 import { faSquareMinus, faSquarePlus, faHouse } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd"
@@ -13,7 +13,9 @@ import "../../../styles/Table.module.css"
 import { TrainWithTrips, Station, Train, Timetable, defaultTimeTable, stationIdent } from '../../../components/types';
 import { createTimetable, createStation, createTrain } from "../../../components/types"
 
-const Station = ({ name, short, changeStation, removeStation }) => {
+const Station = ({ station, changeStation, removeStation }: { station: Station, changeStation: Function, removeStation: Function }) => {
+  let { name, ident } = station;
+
   const mainRef = useRef(null);
   const ref = useRef(null);
   const refShort = useRef(null);
@@ -23,23 +25,27 @@ const Station = ({ name, short, changeStation, removeStation }) => {
   })
   return (
     <div ref={mainRef} className={styles2.station} draggable={true}>
-      <input key="name" ref={ref} defaultValue={name} onChange={(e) => { e.preventDefault(); e.stopPropagation(); changeStation(short, ref.current.value, short); }} onClick={(e) => { }} />
-      <input className={styles2.short} ref={refShort} defaultValue={short} onChange={(e) => { changeStation(short, name, refShort.current.value); e.stopPropagation() }} onClick={(e) => { }} />
+      <input key="name" ref={ref} defaultValue={name} onChange={(e) => { e.preventDefault(); e.stopPropagation(); changeStation(ident, ref.current.value, ident); }} 
+      onClick={(e) => { }} />
+      <input className={styles2.short} ref={refShort} defaultValue={ident} 
+      onChange={(e) => { changeStation(ident, name, refShort.current.value); e.stopPropagation() }} onClick={(e) => { }} />
       <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { removeStation(refShort.current.value) }} />
     </div>
   )
 }
 
-const Stations = ({ stations, setStations, table }) => {
+const Stations = ({ setStations, table }: { setStations: Function, table: Timetable }) => {
+  let stations = table.stations;
+
   const addStation = () => {
     setStations([...stations, createStation("X Station", "X")])
   }
-  const changeStation = (shortIdent, name: String, short: String) => {
+  const changeStation = (shortIdent, name: string, ident: string) => {
     for (let i = 0; i < stations.length; i++) {
       let s = stations[i];
-      if (s.short === shortIdent) {
+      if (s.ident === shortIdent) {
         s.name = name;
-        s.short = short;
+        s.ident = ident;
         setStations([...stations.slice(0, i), s, ...stations.slice(i + 1, stations.length)]);
         break
       }
@@ -86,7 +92,7 @@ const Stations = ({ stations, setStations, table }) => {
                         {...provided.dragHandleProps}
                         {...provided.draggableProps}
                       >
-                        <Station name={s.name} short={s.ident} changeStation={changeStation} removeStation={removeStation} />
+                        <Station station={s} changeStation={changeStation} removeStation={removeStation} />
                       </div>
                     )}
                   </Draggable>
@@ -101,8 +107,7 @@ const Stations = ({ stations, setStations, table }) => {
   )
 }
 
-const TrainStation = ({ ident, time, stationIdents }: { ident: stationIdent, time: string, stationIdents: stationIdent[] }) => {
-  console.log(ident)
+const TrainStation = ({ ident, time, setTrainStations, allStations }: { ident: stationIdent, time: string, setTrainStations: Function, allStations: Station[] }) => {
   return (
     <div key={ident} className="w100">
       <li>
@@ -111,12 +116,10 @@ const TrainStation = ({ ident, time, stationIdents }: { ident: stationIdent, tim
             {time}
           </h6>
           <select defaultValue={ident}>
-            {stationIdents.map((stationIdent, j) =>
-              ident == stationIdent ?
-                <option key={j} value={stationIdent}>
-                  {stationIdent}
-                </option>
-                : null
+            {allStations.map((station, j) =>
+              <option key={j} value={station.ident}>
+                {station.ident}
+              </option>
             )}
           </select>
         </div>
@@ -124,8 +127,59 @@ const TrainStation = ({ ident, time, stationIdents }: { ident: stationIdent, tim
     </div>
   )
 }
-const Train = ({ id, startTime, stations, durations }: Train) => {
+
+const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function, table: Timetable }) => {
+  let { id, startTime, stations, durations } = train;
+  let trainIndex = table.trains.indexOf(train);
+
   const ref = useRef<HTMLInputElement>();
+
+  const changeTrainId = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length > 0) {
+      let newId = e.target.value;
+      try {
+        let newTrain = createTrain(newId, startTime, stations, durations);
+        setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
+      } 
+      catch (err) {
+        console.error(err);
+      }
+    } else {
+      e.target.value = id;
+    }
+  }
+  const changeTrainStartTime = (e: ChangeEvent<HTMLInputElement>, isBlur=false) => {
+    if (e.target.value.length > 0 && e.target.value.includes(":")) {
+        let newStartTime = new Date();
+        try {
+          newStartTime= new Date("2000.01.01 " + e.target.value);
+          format(new Date(newStartTime), "HH:mm")
+        } catch (err) {
+          if (err instanceof RangeError) {
+            e.target.value = format(new Date(startTime), "HH:mm");
+            return
+          }
+        }
+        console.log("abc")
+        let index = table.trains.indexOf(train);
+        try {
+          let newTrain = createTrain(id, newStartTime, stations, durations);
+          setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
+        } 
+        catch (err) {
+          console.error(err);
+        }
+
+    } else {
+      if (isBlur) {
+        e.target.value = format(new Date(startTime), "HH:mm");
+      }
+    }
+  }
+  const setTrainStations = (stations: stationIdent[], durations: number[]) => {
+    let newTrain = createTrain(id, train.startTime, stations, durations);
+    setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
+  }
 
   const addAllMinutes = (index: number): Date => {
     let time = new Date(startTime);
@@ -138,8 +192,9 @@ const Train = ({ id, startTime, stations, durations }: Train) => {
   return (
     <div className={styles2.trains}>
       <div className={styles2.trainHead}>
-        <input ref={ref} defaultValue={id} onChange={() => { }} onClick={(e) => { }} />
-        <input ref={ref} defaultValue={format(new Date(startTime), "HH:mm")} onChange={() => { }} onClick={(e) => { }} className={styles2.short} />
+        <input defaultValue={id} onBlur={changeTrainId} />
+        <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime} 
+        onBlur={(e) => changeTrainStartTime(e, true)}className={styles2.short} />
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { }} />
       </div>
       <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={(e) => { }} />
@@ -155,7 +210,7 @@ const Train = ({ id, startTime, stations, durations }: Train) => {
               );
             }
             return <>
-              <TrainStation ident={s} time={format(addAllMinutes(i), "HH:mm")} stationIdents={stations} />
+              <TrainStation key={i} ident={s} time={format(addAllMinutes(i), "HH:mm")} setTrainStations={setTrainStations} allStations={table.stations} />
               {duration}
             </>
           })}
@@ -165,13 +220,14 @@ const Train = ({ id, startTime, stations, durations }: Train) => {
   )
 }
 
-const Trains = ({ trains, setTrains, table }) => {
+const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable }) => {
+  let trains = table.trains;
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
     <>
       <FontAwesomeIcon icon={faSquarePlus} className={styles.headIcon} onClick={() => { }} />
-      {trains.map((t: Train) => {
-        return <Train key={t.id} id={t.id} startTime={t.startTime} stations={t.stations} durations={t.durations} />
+      {trains.map((t: Train, i) => {
+        return <Train key={i} train={t} setTrains={setTrains} table={table} />
       })}
     </>
 
@@ -198,8 +254,6 @@ const Table = () => {
     let tables = JSON.parse(localStorage.getItem("tables"));
     for (let i = 0; i < tables.length; i++) {
       let item: Timetable = tables[i];
-      console.log(item)
-      console.log(item.id, id)
       if (item.id == Number(id)) {
         setTable(item);
         if (item.stations.length == 0) {
@@ -208,7 +262,6 @@ const Table = () => {
         if (item.trains.length == 0) {
           setTable(createTimetable(item.id, item.title, defaultStations, defaultTrains));
         }
-        console.log("table set")
       }
     }
   }, [router.isReady])
@@ -241,10 +294,10 @@ const Table = () => {
         <h1 className={styles2.title}>{table?.title ?? ""}</h1>
 
         <h2 className={styles2.routes}>Stations</h2>
-        <Stations stations={table.stations} setStations={setStations} table={table} />
+        <Stations setStations={setStations} table={table} />
 
         <h2 className={styles2.routes}>Trains</h2>
-        <Trains trains={table.trains} setTrains={setTrains} table={table} />
+        <Trains setTrains={setTrains} table={table} />
 
       </div>
     </div>
