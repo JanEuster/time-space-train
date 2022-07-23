@@ -16,10 +16,15 @@
 }
 
 .stations,
-.trains {
+.train {
   min-width: min(200px, 80vw);
   width: 100%;
   margin-bottom: 30px;
+}
+.trainSubHead {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .station {
@@ -57,9 +62,22 @@
   align-items: center;
 }
 
-.routeStations h6 {
+.routeStations li h6 {
   margin-left: 10px;
   display: inline;
+}
+.routeStations li .icon {
+  margin-left: auto
+}
+
+.stationSelect {
+  display: block;
+  height: 100%;
+}
+
+.stationSelect label {
+  font-size: 18px;
+  margin-left: 8px;
 }
 
 .routeDuration {

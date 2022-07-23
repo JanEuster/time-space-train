@@ -30,7 +30,7 @@ select {
 }
 
 input {
-  width: 160px;
+  width: 130px;
   user-select: none;
 
   z-index: 100;

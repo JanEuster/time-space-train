@@ -109,6 +109,7 @@ const Stations = ({ setStations, table }: { setStations: Function, table: Timeta
 
 const TrainStation = ({ index, ident, time, train, setTrainStations, allStations }: { index: number, ident: stationIdent, time: string, train: Train, setTrainStations: Function, allStations: Station[] }) => {
   let tsIndex = index;
+  let [stationName, setStationName] = useState("")
 
   const setTrainStationIdents = (idents: stationIdent[]) => {
     setTrainStations(
@@ -139,14 +140,23 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
         );
     }, 10)
   }
+
+  useEffect(() => {
+    for (let station of allStations) {
+      if (station.ident == ident) {
+        setStationName(station.name);
+      }
+    }
+  }, [ident])
+
   return (
     <>
       <div key={ident} className="w100">
         <li>
-          <div className="h100">
             <h6>
               {time}
             </h6>
+            <div className={styles2.stationSelect}>
             <select defaultValue={ident} onChange={(e) => changeTSIdent(e)}>
               {allStations.map((station, j) =>
                 <option key={j} value={station.ident}>
@@ -154,7 +164,8 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
                 </option>
               )}
             </select>
-          </div>
+            <label>{stationName}</label>
+            </div>
             <FontAwesomeIcon icon={faSquareMinus} className={styles2.icon} onClick={removeStation} />
         </li>
       </div>
@@ -172,6 +183,7 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
 const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function, table: Timetable }) => {
   let { id, startTime, stations, durations } = train;
   let trainIndex = table.trains.indexOf(train);
+  const [route, setRoute] = useState([]);
 
   const ref = useRef<HTMLInputElement>();
 
@@ -242,15 +254,30 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     return time
   }
 
+  useEffect(() => {;
+    let stations = [];
+    for (let trainStation of train.stations) {
+      for (let station of table.stations) {
+        if (trainStation == station.ident) {
+          stations.push(station.name);
+        }
+      }
+    }
+    setRoute(stations);
+  }, [train, table])
+
   return (
-    <div className={styles2.trains}>
+    <div className={styles2.train}>
       <div className={styles2.trainHead}>
         <input defaultValue={id} onBlur={changeTrainId} />
         <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime} 
         onBlur={(e) => changeTrainStartTime(e, true)}className={styles2.short} />
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
-      <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={addTrainStation} />
+      <div className={styles2.trainSubHead}>
+        <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={addTrainStation} />
+        <i>{route[0]} -> {route[train.stations.length-1]}</i>
+      </div>
       <div className={styles2.route}>
         <ol className={styles2.routeStations}>
           {stations.map((s, i) => 
