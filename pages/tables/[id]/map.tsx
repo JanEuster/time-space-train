@@ -95,30 +95,47 @@ class TSTGraph {
 
       this.drawAxis(ctx, config);
 
-      // station labels
+      // station(space) labels
       let stationsNum = config.data.stations.length;
-      let stationSpacing = config.yLength / (stationsNum + 1);
+      let stationSpacing = config.yLength / stationsNum;
 
-      console.log(timetable)
-      for (let i = 1; i <= stationsNum; i++) {
-        let station = config.data.stations[i-1];
+      let stationHeights = []
+      for (let i = 0; i < stationsNum; i++) {
+        let station = config.data.stations[i];
         let stationNameWidth = ctx.measureText(station.ident).width;
+        stationHeights.push(i*stationSpacing - 0.5 / 1.3 * config.fontSize + stationSpacing/2)
 
         // backgroud
         ctx.fillStyle = "#ADD8E6";
-        ctx.fillRect(config.inset - stationNameWidth, i*stationSpacing - config.fontSize, 2*stationNameWidth, 1.3 * config.fontSize);
+        ctx.fillRect(config.inset - stationNameWidth, i*stationSpacing - config.fontSize + stationSpacing/2, stationNameWidth + 20, 1.3 * config.fontSize);
         // text
         ctx.fillStyle = "black";
-        ctx.fillText(station.ident, config.inset - 0.5*stationNameWidth, i*stationSpacing);
+        ctx.fillText(station.ident, config.inset - 0.5*stationNameWidth, i*stationSpacing + stationSpacing/2);
 
         // dashed line
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.setLineDash([10]);
-        ctx.moveTo(config.inset + stationNameWidth, i*stationSpacing - 0.5 / 1.3 * config.fontSize);
-        ctx.lineTo(config.inset + config.xLength, i*stationSpacing - 0.5 / 1.3 * config.fontSize);
+        ctx.moveTo(config.inset + stationNameWidth, stationHeights[i]);
+        ctx.lineTo(config.inset + config.xLength, stationHeights[i]);
         ctx.stroke();
         ctx.closePath();
+      }
+
+
+      // time labels
+      let timeSpacing = (config.xLength - 15) / 24;
+      let maxTimeWidth = inset + 24*timeSpacing;
+      ctx.textAlign = "center";
+      for (let i = 0; i < 24; i++) {
+        let timeNameWidth = ctx.measureText(String(i)).width;
+        let timeWidth = inset + i*timeSpacing;
+        // backgroud
+        ctx.fillStyle = "#ADD8E6";
+        ctx.fillRect(timeWidth - 0.75*timeNameWidth, height - inset + 10, 1.5*timeNameWidth, config.fontSize);
+        // text
+        ctx.fillStyle = "black";
+        ctx.fillText(String(i), timeWidth, height - inset + 10 + config.fontSize - 5);
       }
     }
   }
