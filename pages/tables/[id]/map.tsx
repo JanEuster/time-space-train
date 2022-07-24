@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
+import { isNativeError } from "util/types";
 import { Timetable } from "../../../components/types";
 import styles from "/styles/Timetable.module.css";
 
@@ -7,6 +8,10 @@ type graphConfig = {
   width: number,
   height: number,
   inset: number,
+  xLength: number,
+  yLength: number,
+  fontSize: number,
+  data: Timetable,
 }
 class TSTGraph {
   id: number;
@@ -53,10 +58,10 @@ class TSTGraph {
       ctx.fill();
       ctx.closePath();
       // axis titles
-      let textLength1 = ctx.measureText("time");
-      ctx.fillText("time", inset - textLength1.width/2, 0.6 * inset);
-      let textLength2 = ctx.measureText("space");
-      ctx.fillText("space", width - inset - textLength2.width/2, height - 0.4 * inset);
+      let textLength1 = ctx.measureText("space");
+      ctx.fillText("space", inset - textLength1.width/2, 0.6 * inset);
+      let textLength2 = ctx.measureText("time");
+      ctx.fillText("time", width - inset - textLength2.width/2, height - 0.4 * inset);
   }
   draw(ctx: CanvasRenderingContext2D): void {
     console.log("redraw")
@@ -66,27 +71,56 @@ class TSTGraph {
     let width = ctx.canvas.width;
     let height = ctx.canvas.height;
     let inset = 48;
-    let config: graphConfig = {
-      width: width,
-      height: height,
-      inset: inset
-    }
     // clean up
     ctx.clearRect(0, 0, width, height);
 
     // if timetable: draw the thing
     if (timetable) {
       // setup
+      let config: graphConfig = {
+        width: width,
+        height: height,
+        inset: inset,
+        xLength: width - 2*inset,
+        yLength: height - 2*inset,
+        fontSize: 30,
+        data: timetable,
+      }
       //ctx.fillStyle = "#83C3D8";
       //ctx.strokeStyle = "#ADD8E6";
       ctx.fillStyle = "black"
       ctx.strokeStyle = "black";
       ctx.lineWidth = 6;
-      ctx.font = "30px Arial"
+      ctx.font = `${config.fontSize}px Arial`
 
       this.drawAxis(ctx, config);
+
+      // station labels
+      let stationsNum = config.data.stations.length;
+      let stationSpacing = config.yLength / (stationsNum + 1);
+
+      console.log(timetable)
+      for (let i = 1; i <= stationsNum; i++) {
+        let station = config.data.stations[i-1];
+        let stationNameWidth = ctx.measureText(station.ident).width;
+
+        // backgroud
+        ctx.fillStyle = "#ADD8E6";
+        ctx.fillRect(config.inset - stationNameWidth, i*stationSpacing - config.fontSize, 2*stationNameWidth, 1.3 * config.fontSize);
+        // text
+        ctx.fillStyle = "black";
+        ctx.fillText(station.ident, config.inset - 0.5*stationNameWidth, i*stationSpacing);
+
+        // dashed line
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10]);
+        ctx.moveTo(config.inset + stationNameWidth, i*stationSpacing - 0.5 / 1.3 * config.fontSize);
+        ctx.lineTo(config.inset + config.xLength, i*stationSpacing - 0.5 / 1.3 * config.fontSize);
+        ctx.stroke();
+        ctx.closePath();
+      }
     }
-    
   }
 }
 
