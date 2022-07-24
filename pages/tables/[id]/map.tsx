@@ -3,6 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Timetable } from "../../../components/types";
 import styles from "/styles/Timetable.module.css";
 
+type graphConfig = {
+  width: number,
+  height: number,
+  inset: number,
+}
 class TSTGraph {
   id: number;
 
@@ -18,26 +23,9 @@ class TSTGraph {
     }
     return false
   }
-  draw(ctx: CanvasRenderingContext2D): void {
-    console.log("redraw")
-    let timetable = this.getCurrentTable();
 
-    // get stuff
-    let width = ctx.canvas.width;
-    let height = ctx.canvas.height;
-    let inset = 48;
-    // clean up
-    ctx.clearRect(0, 0, width, height);
-
-    // if timetable: draw the thing
-    if (timetable) {
-      // setup
-      //ctx.fillStyle = "#83C3D8";
-      //ctx.strokeStyle = "#ADD8E6";
-      ctx.fillStyle = "black"
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 6;
-      ctx.font = "30px Arial"
+  drawAxis(ctx: CanvasRenderingContext2D, config: graphConfig): void {
+      let {width, height, inset} = config;
       // y axis
       ctx.beginPath();
       ctx.moveTo(inset, inset);
@@ -69,6 +57,34 @@ class TSTGraph {
       ctx.fillText("time", inset - textLength1.width/2, 0.6 * inset);
       let textLength2 = ctx.measureText("space");
       ctx.fillText("space", width - inset - textLength2.width/2, height - 0.4 * inset);
+  }
+  draw(ctx: CanvasRenderingContext2D): void {
+    console.log("redraw")
+    let timetable = this.getCurrentTable();
+
+    // get stuff
+    let width = ctx.canvas.width;
+    let height = ctx.canvas.height;
+    let inset = 48;
+    let config: graphConfig = {
+      width: width,
+      height: height,
+      inset: inset
+    }
+    // clean up
+    ctx.clearRect(0, 0, width, height);
+
+    // if timetable: draw the thing
+    if (timetable) {
+      // setup
+      //ctx.fillStyle = "#83C3D8";
+      //ctx.strokeStyle = "#ADD8E6";
+      ctx.fillStyle = "black"
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 6;
+      ctx.font = "30px Arial"
+
+      this.drawAxis(ctx, config);
     }
     
   }
