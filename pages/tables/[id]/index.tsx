@@ -7,11 +7,12 @@ import { faSquareMinus, faSquarePlus, faHouse } from '@fortawesome/free-solid-sv
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd"
 import { addMinutes, format } from "date-fns"
-import styles from "../../../styles/Home.module.css"
-import styles2 from "../../../styles/Table.module.css"
-import "../../../styles/Table.module.css"
+import styles from "/styles/Home.module.css"
+import styles2 from "/styles/Timetable.module.css"
+import "/styles/Timetable.module.css"
 import { TrainWithTrips, Station, Train, Timetable, defaultTimeTable, stationIdent } from '../../../components/types';
 import { createTimetable, createStation, createTrain } from "../../../components/types"
+import Map from './map';
 
 const Station = ({ station, changeStation, removeStation }: { station: Station, changeStation: Function, removeStation: Function }) => {
   let { name, ident } = station;
@@ -25,10 +26,10 @@ const Station = ({ station, changeStation, removeStation }: { station: Station, 
   })
   return (
     <div ref={mainRef} className={styles2.station} draggable={true}>
-      <input key="name" ref={ref} defaultValue={name} onChange={(e) => { e.preventDefault(); e.stopPropagation(); changeStation(ident, ref.current.value, ident); }} 
-      onClick={(e) => { }} />
-      <input className={styles2.short} ref={refShort} defaultValue={ident} 
-      onChange={(e) => { changeStation(ident, name, refShort.current.value); e.stopPropagation() }} onClick={(e) => { }} />
+      <input key="name" ref={ref} defaultValue={name} onChange={(e) => { e.preventDefault(); e.stopPropagation(); changeStation(ident, ref.current.value, ident); }}
+        onClick={(e) => { }} />
+      <input className={styles2.short} ref={refShort} defaultValue={ident}
+        onChange={(e) => { changeStation(ident, name, refShort.current.value); e.stopPropagation() }} onClick={(e) => { }} />
       <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={(e) => { removeStation(refShort.current.value) }} />
     </div>
   )
@@ -125,19 +126,19 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
   }
 
   const changeTSIdent = (e: ChangeEvent<HTMLSelectElement>) => {
-    setTrainStationIdents([...train.stations.slice(0, tsIndex), e.target.value, ...train.stations.slice(tsIndex+1)])
+    setTrainStationIdents([...train.stations.slice(0, tsIndex), e.target.value, ...train.stations.slice(tsIndex + 1)])
   }
   const changeDuration = (e: ChangeEvent<HTMLInputElement>) => {
-    setTrainStationDurations([...train.durations.slice(0, tsIndex), Number(e.target.value), ...train.durations.slice(tsIndex+1)])
+    setTrainStationDurations([...train.durations.slice(0, tsIndex), Number(e.target.value), ...train.durations.slice(tsIndex + 1)])
   }
-  const removeStation = () => { 
+  const removeStation = () => {
     // same trick as with removeTrain
     setTrainStations([], []);
     setTimeout(() => {
       setTrainStations(
-        [...train.stations.slice(0, tsIndex), ...train.stations.slice(tsIndex+1)],
-        [...train.durations.slice(0, tsIndex), ...train.durations.slice(tsIndex+1)]
-        );
+        [...train.stations.slice(0, tsIndex), ...train.stations.slice(tsIndex + 1)],
+        [...train.durations.slice(0, tsIndex), ...train.durations.slice(tsIndex + 1)]
+      );
     }, 10)
   }
 
@@ -153,10 +154,10 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
     <>
       <div key={ident} className="w100">
         <li>
-            <h6>
-              {time}
-            </h6>
-            <div className={styles2.stationSelect}>
+          <h6>
+            {time}
+          </h6>
+          <div className={styles2.stationSelect}>
             <select defaultValue={ident} onChange={(e) => changeTSIdent(e)}>
               {allStations.map((station, j) =>
                 <option key={j} value={station.ident}>
@@ -165,16 +166,16 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
               )}
             </select>
             <label>{stationName}</label>
-            </div>
-            <FontAwesomeIcon icon={faSquareMinus} className={styles2.icon} onClick={removeStation} />
+          </div>
+          <FontAwesomeIcon icon={faSquareMinus} className={styles2.icon} onClick={removeStation} />
         </li>
       </div>
       {
         tsIndex < train.stations.length - 1 ?
-        <div className={styles2.routeDuration}>
-          <input defaultValue={train.durations[tsIndex]} onChange={(e) => changeDuration(e)}></input> min
-        </div>
-        : null
+          <div className={styles2.routeDuration}>
+            <input defaultValue={train.durations[tsIndex]} onChange={(e) => changeDuration(e)}></input> min
+          </div>
+          : null
       }
     </>
   )
@@ -192,8 +193,8 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
       let newId = e.target.value;
       try {
         let newTrain = createTrain(newId, startTime, stations, durations);
-        setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
-      } 
+        setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
+      }
       catch (err) {
         console.error(err);
       }
@@ -201,26 +202,26 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
       e.target.value = id;
     }
   }
-  const changeTrainStartTime = (e: ChangeEvent<HTMLInputElement>, isBlur=false) => {
+  const changeTrainStartTime = (e: ChangeEvent<HTMLInputElement>, isBlur = false) => {
     if (e.target.value.length > 0 && e.target.value.includes(":")) {
-        let newStartTime = new Date();
-        try {
-          newStartTime= new Date("2000.01.01 " + e.target.value);
-          format(new Date(newStartTime), "HH:mm")
-        } catch (err) {
-          if (err instanceof RangeError) {
-            e.target.value = format(new Date(startTime), "HH:mm");
-            return
-          }
+      let newStartTime = new Date();
+      try {
+        newStartTime = new Date("2000.01.01 " + e.target.value);
+        format(new Date(newStartTime), "HH:mm")
+      } catch (err) {
+        if (err instanceof RangeError) {
+          e.target.value = format(new Date(startTime), "HH:mm");
+          return
         }
-        let index = table.trains.indexOf(train);
-        try {
-          let newTrain = createTrain(id, newStartTime, stations, durations);
-          setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
-        } 
-        catch (err) {
-          console.error(err);
-        }
+      }
+      let index = table.trains.indexOf(train);
+      try {
+        let newTrain = createTrain(id, newStartTime, stations, durations);
+        setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
+      }
+      catch (err) {
+        console.error(err);
+      }
 
     } else {
       if (isBlur) {
@@ -230,7 +231,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
   }
   const setTrainStations = (stations: stationIdent[], durations: number[]) => {
     let newTrain = createTrain(id, train.startTime, stations, durations);
-    setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex+1)]);
+    setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
   }
 
   const removeTrain = () => {
@@ -238,7 +239,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     // without it rerendering fucks up? the last trains gets removed visually while data gets modified correctly
     setTrains([])
     setTimeout(() => {
-      setTrains([...table.trains.slice(0, trainIndex), ...table.trains.slice(trainIndex+1)]);
+      setTrains([...table.trains.slice(0, trainIndex), ...table.trains.slice(trainIndex + 1)]);
     }, 10)
   }
 
@@ -254,7 +255,8 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     return time
   }
 
-  useEffect(() => {;
+  useEffect(() => {
+    ;
     let stations = [];
     for (let trainStation of train.stations) {
       for (let station of table.stations) {
@@ -270,18 +272,18 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     <div className={styles2.train}>
       <div className={styles2.trainHead}>
         <input defaultValue={id} onBlur={changeTrainId} />
-        <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime} 
-        onBlur={(e) => changeTrainStartTime(e, true)}className={styles2.short} />
+        <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime}
+          onBlur={(e) => changeTrainStartTime(e, true)} className={styles2.short} />
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
       <div className={styles2.trainSubHead}>
         <FontAwesomeIcon icon={faSquarePlus} className={styles2.icon} onClick={addTrainStation} />
-        <i>{route[0]} -> {route[train.stations.length-1]}</i>
+        <i>{route[0]} -> {route[train.stations.length - 1]}</i>
       </div>
       <div className={styles2.route}>
         <ol className={styles2.routeStations}>
-          {stations.map((s, i) => 
-              <TrainStation key={i} index={i} ident={s} time={format(addAllMinutes(i), "HH:mm")} setTrainStations={setTrainStations} train={train} allStations={table.stations} />
+          {stations.map((s, i) =>
+            <TrainStation key={i} index={i} ident={s} time={format(addAllMinutes(i), "HH:mm")} setTrainStations={setTrainStations} train={train} allStations={table.stations} />
           )}
         </ol>
       </div>
@@ -355,23 +357,30 @@ const Table = () => {
   }, [table])
 
   return table ? (
-    <div className={styles2.container}>
-      <div>
-        <Link href="/">
-          <a>
-            <FontAwesomeIcon icon={faHouse} className={styles.headIcon} />
-          </a>
-        </Link>
+    <div className={styles2.wrapper}>
+      <div className={styles2.settings_container}>
+        <div>
+          <div>
+            <Link href="/">
+              <a>
+                <FontAwesomeIcon icon={faHouse} className={styles.headIcon} />
+              </a>
+            </Link>
+          </div>
+          <div>
+            <h1 className={styles2.title}>{table?.title ?? ""}</h1>
+
+            <h2 className={styles2.routes}>Stations</h2>
+            <Stations setStations={setStations} table={table} />
+
+            <h2 className={styles2.routes}>Trains</h2>
+            <Trains setTrains={setTrains} table={table} />
+
+          </div>
+        </div>
       </div>
-      <div>
-        <h1 className={styles2.title}>{table?.title ?? ""}</h1>
-
-        <h2 className={styles2.routes}>Stations</h2>
-        <Stations setStations={setStations} table={table} />
-
-        <h2 className={styles2.routes}>Trains</h2>
-        <Trains setTrains={setTrains} table={table} />
-
+      <div className={styles2.map_container}>
+        <Map />
       </div>
     </div>
   ) : null
