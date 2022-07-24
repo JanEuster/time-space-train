@@ -353,6 +353,8 @@ const Table = () => {
         tables[i] = item
         localStorage.setItem("tables", JSON.stringify(tables))
       }
+
+      window.dispatchEvent(new CustomEvent("timetable_changed", {detail: { id: id }}))
     }
   }, [table])
 
@@ -379,9 +381,7 @@ const Table = () => {
           </div>
         </div>
       </div>
-      <div className={styles2.map_container}>
         <Map />
-      </div>
     </div>
   ) : null
 }
