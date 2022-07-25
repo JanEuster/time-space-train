@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
-import { isNativeError } from "util/types";
-import { Timetable } from "../../../components/types";
+import { Station, Timetable } from "../../../components/types";
 import styles from "/styles/Timetable.module.css";
+import { addMinutes, format } from "date-fns"
 
 type graphConfig = {
   width: number,
@@ -63,6 +63,53 @@ class TSTGraph {
       let textLength2 = ctx.measureText("time");
       ctx.fillText("time", width - inset - textLength2.width/2, height - 0.4 * inset);
   }
+  drawAxisLabels(ctx: CanvasRenderingContext2D, config: graphConfig): [Object, number] {
+      // station(space) labels
+      let stationsNum = config.data.stations.length;
+      let stationSpacing = config.yLength / stationsNum;
+
+      let stationHeights = {}
+      for (let i = 0; i < stationsNum; i++) {
+        let station = config.data.stations[i];
+        let stationNameWidth = ctx.measureText(station.ident).width;
+        stationHeights[station.ident] = i*stationSpacing - 0.5 / 1.3 * config.fontSize + stationSpacing/2;
+
+        // backgroud
+        ctx.fillStyle = "#ADD8E6";
+        ctx.fillRect(config.inset - stationNameWidth, i*stationSpacing - config.fontSize + stationSpacing/2, stationNameWidth + 20, 1.3 * config.fontSize);
+        // text
+        ctx.fillStyle = "black";
+        ctx.fillText(station.ident, config.inset - 0.5*stationNameWidth, i*stationSpacing + stationSpacing/2);
+
+        // dashed line
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10]);
+        ctx.moveTo(config.inset + stationNameWidth, stationHeights[station.ident]);
+        ctx.lineTo(config.inset + config.xLength, stationHeights[station.ident]);
+        ctx.stroke();
+        ctx.closePath();
+      }
+
+
+      // time labels
+      let timeSpacing = (config.xLength - 15) / 24;
+      let maxTimeWidth = config.inset + 24*timeSpacing;
+      ctx.textAlign = "center";
+      for (let i = 0; i < 24; i++) {
+        let timeNameWidth = ctx.measureText(String(i)).width;
+        let timeWidth = config.inset + i*timeSpacing;
+        // backgroud
+        ctx.fillStyle = "#ADD8E6";
+        ctx.fillRect(timeWidth - 0.75*timeNameWidth, config.height - config.inset + 10, 1.5*timeNameWidth, config.fontSize);
+        // text
+        ctx.fillStyle = "black";
+        ctx.fillText(String(i), timeWidth, config.height - config.inset + 10 + config.fontSize - 5);
+      }
+
+    return [stationHeights, maxTimeWidth];
+  }
+
   draw(ctx: CanvasRenderingContext2D): void {
     console.log("redraw")
     let timetable = this.getCurrentTable();
@@ -86,57 +133,64 @@ class TSTGraph {
         fontSize: 30,
         data: timetable,
       }
-      //ctx.fillStyle = "#83C3D8";
-      //ctx.strokeStyle = "#ADD8E6";
+      //ctx.fillStyle = "#83C3D8"; BLUE
+      //ctx.strokeStyle = "#ADD8E6"; LIGHTBLUE
+      // reset
       ctx.fillStyle = "black"
       ctx.strokeStyle = "black";
       ctx.lineWidth = 6;
       ctx.font = `${config.fontSize}px Arial`
+      ctx.textAlign = "left";
 
       this.drawAxis(ctx, config);
+      const [stationHeights, maxTimeWidth] = this.drawAxisLabels(ctx, config);
 
-      // station(space) labels
-      let stationsNum = config.data.stations.length;
-      let stationSpacing = config.yLength / stationsNum;
+      // trains
+      ctx.setLineDash([]);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#83C3D8";
+      for (let i = 0; i < timetable.trains.length; i++) {
+        let train = timetable.trains[i];
+        let time = train.startTime;
 
-      let stationHeights = []
-      for (let i = 0; i < stationsNum; i++) {
-        let station = config.data.stations[i];
-        let stationNameWidth = ctx.measureText(station.ident).width;
-        stationHeights.push(i*stationSpacing - 0.5 / 1.3 * config.fontSize + stationSpacing/2)
-
-        // backgroud
-        ctx.fillStyle = "#ADD8E6";
-        ctx.fillRect(config.inset - stationNameWidth, i*stationSpacing - config.fontSize + stationSpacing/2, stationNameWidth + 20, 1.3 * config.fontSize);
-        // text
-        ctx.fillStyle = "black";
-        ctx.fillText(station.ident, config.inset - 0.5*stationNameWidth, i*stationSpacing + stationSpacing/2);
-
-        // dashed line
+        let firstPos = {x: 0, y: 0};
+        let lastPos = {x: 0, y: 0};
         ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.setLineDash([10]);
-        ctx.moveTo(config.inset + stationNameWidth, stationHeights[i]);
-        ctx.lineTo(config.inset + config.xLength, stationHeights[i]);
+        for (let j = 0; j < train.stations.length; j++) {
+          let station = train.stations[j];
+          // calculate time as decimal 0-1 to multiply with maxTimeWidth(23:99)
+          console.log()
+          let x = maxTimeWidth * (Number(format(new Date(time), "HH")) + 1/60*Number(format(new Date(time), "mm")) )/ 24
+          let y = stationHeights[station];
+          console.log(x, y);
+          if (j == 0) {
+            ctx.moveTo(x, y);
+            firstPos.x = x;
+            firstPos.y = y;
+          } else {
+            ctx.lineTo(x, y);
+          }
+
+          if (j < train.stations.length - 1) {
+            time = addMinutes(new Date(time), train.durations[j]);
+          } else {
+            lastPos.x = x;
+            lastPos.y = y;
+          }
+        }
         ctx.stroke();
-        ctx.closePath();
-      }
-
-
-      // time labels
-      let timeSpacing = (config.xLength - 15) / 24;
-      let maxTimeWidth = inset + 24*timeSpacing;
-      ctx.textAlign = "center";
-      for (let i = 0; i < 24; i++) {
-        let timeNameWidth = ctx.measureText(String(i)).width;
-        let timeWidth = inset + i*timeSpacing;
-        // backgroud
-        ctx.fillStyle = "#ADD8E6";
-        ctx.fillRect(timeWidth - 0.75*timeNameWidth, height - inset + 10, 1.5*timeNameWidth, config.fontSize);
-        // text
+        ctx.closePath()
+        // train label
+        ctx.fillStyle = "#83C3D8";
+        ctx.font = `${2/3*config.fontSize}px Arial black`
+        let trainLabelWidth = ctx.measureText(train.id).width;
+        ctx.fillRect(firstPos.x - trainLabelWidth/2 - 5, firstPos.y - 2/3*config.fontSize, trainLabelWidth + 10, 2/3*config.fontSize);
+        ctx.fillRect(lastPos.x - trainLabelWidth/2 - 5, lastPos.y - 2/3*config.fontSize, trainLabelWidth + 10, 2/3*config.fontSize);
         ctx.fillStyle = "black";
-        ctx.fillText(String(i), timeWidth, height - inset + 10 + config.fontSize - 5);
+        ctx.fillText(train.id, firstPos.x, firstPos.y - 2);
+        ctx.fillText(train.id, lastPos.x, lastPos.y - 2);
       }
+
     }
   }
 }
