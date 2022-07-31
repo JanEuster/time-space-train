@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
-import { Station, Timetable } from "../../../components/types";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import { MapSettings, Station, Timetable } from "../../../components/types";
 import styles from "/styles/Timetable.module.css";
 import { addMinutes, format } from "date-fns";
 
@@ -145,6 +145,15 @@ class TSTGraph {
     let width = ctx.canvas.width;
     let height = ctx.canvas.height;
     let inset = 48;
+
+    // get mapSettings
+    const mapSettings = localStorage.getItem("mapSettings");
+    // set default options
+    let startEndLabels = true;
+
+    if (mapSettings !== mapSettings) {
+    }
+
     // clean up
     ctx.clearRect(0, 0, width, height);
 
@@ -233,6 +242,46 @@ class TSTGraph {
   }
 }
 
+const MapSettings = ({ id: number }) => {
+  const [mapSettings, setMapSettings] = useState<MapSettings>({});
+  const saveSettings = () => {
+    localStorage.setItem("mapSettings", JSON.stringify(mapSettings));
+  };
+  const changeCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
+    let prop = e.target.name;
+    let newSettings = mapSettings;
+    newSettings[prop] = e.target.checked;
+    console.log(newSettings);
+    setMapSettings(newSettings);
+    saveSettings();
+  };
+
+  useEffect(() => {
+    console.log(localStorage.getItem("mapSettings"));
+    if (localStorage.getItem("mapSettings")) {
+      const storedSettings: MapSettings = JSON.parse(
+        localStorage.getItem("mapSettings")
+      ) as MapSettings;
+      setMapSettings(storedSettings);
+    }
+  }, []);
+
+  return (
+    <div className={styles.map_settings}>
+      <div className={styles.map_settings_column}>
+        <input
+          type="checkbox"
+          name="start_end_labels"
+          onChange={changeCheckbox}
+          defaultChecked={mapSettings["start_end_labels"]}
+        />
+        <label>start/end of line labels</label>
+      </div>
+      <div className={styles.map_settings_column}></div>
+    </div>
+  );
+};
+
 export default function Map() {
   const router = useRouter();
   const { id } = router.query;
@@ -273,6 +322,7 @@ export default function Map() {
   return (
     <div className={styles.map_container}>
       <canvas ref={ref} className={styles.timetable_map}></canvas>
+      <MapSettings id={Number(id)} />
     </div>
   );
 }

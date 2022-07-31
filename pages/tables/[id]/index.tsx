@@ -280,7 +280,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
         <input defaultValue={id} onBlur={changeTrainId} />
         <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime}
           onBlur={(e) => changeTrainStartTime(e, true)} className={styles2.short} />
-        <input type="color" defaultValue="#83C3D8" className={styles2.short} onChange={changeTrainColor}/>
+        <input type="color" defaultValue={train.color} className={styles2.short} onChange={changeTrainColor}/>
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
       <div className={styles2.trainSubHead}>

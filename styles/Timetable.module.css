@@ -41,19 +41,45 @@
 /* MAP */
 .map_container {
   width: calc(100vw - 12px);
-  height: calc(100vh - 12px);
+  max-height: calc(100vh - 12px);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
+
 
 .timetable_map {
   width: 100%;
-  height: 100%;
+  max-height: calc(100% - 130px);
+  flex-basis: 1;
   background: rgb(231, 231, 231);
   border: 5px dashed lightblue;
   outline: 6px dashed #83C3D8;
 
 }
 
+.map_settings {
+  flex-basis: 1;
+  height: 130px;
+  padding: 15px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.map_settings_column {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 8px 9px;
+}
+
+.map_settings input[type="checkbox"]{
+  width: 16px;
+  aspect-ratio: 1;
+}
+.map_settings label {
+  height: 16px;
+  line-height: 16px;
+}
 
 
 .title {
