@@ -73,9 +73,35 @@
 }
 
 .map_settings input[type="checkbox"]{
+  color: #ADD8E6;
   width: 16px;
   aspect-ratio: 1;
 }
+.map_settings input[type="checkbox"]:checked{
+  background-color: #ADD8E6;
+  color: red;
+}
+
+.map_settings input[type="range"] {
+  height: 10px;
+  -webkit-appearance: none;
+  margin-top: 20px;
+}
+.map_settings input[type="range"]::-webkit-slider-runnable-track {
+  background: #ADD8E6;
+  height: 10px;
+}
+.map_settings input[type=range]::-webkit-slider-thumb {
+  margin-top: -5px;
+  height: 20px;
+  width: 10px;
+  border: 2px solid black;
+  background: white;
+  opacity: 0.8;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
 .map_settings label {
   height: 16px;
   line-height: 16px;

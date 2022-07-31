@@ -152,9 +152,11 @@ class TSTGraph {
     );
     // set default options
     let startEndLabels = true;
+    let lineWidth = 6;
 
     if (mapSettings) {
       startEndLabels = mapSettings["start_end_labels"] ?? startEndLabels;
+      lineWidth = mapSettings["line_width"] ?? lineWidth;
     }
 
     // clean up
@@ -186,7 +188,7 @@ class TSTGraph {
 
       // trains
       ctx.setLineDash([]);
-      ctx.lineWidth = 6;
+      ctx.lineWidth = lineWidth;
       for (let i = 0; i < timetable.trains.length; i++) {
         let train = timetable.trains[i];
         ctx.strokeStyle = train.color;
@@ -285,8 +287,22 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
       new CustomEvent("graph_settings_changed", { detail: { id: id } })
     );
   };
+  const changeRange = (e: ChangeEvent<HTMLInputElement>) => {
+    let prop = e.target.name;
+    let newSettings: MapSettings = JSON.parse(
+      localStorage.getItem("mapSettings")
+    );
+    newSettings[prop] = Number(e.target.value);
+    localStorage.setItem("mapSettings", JSON.stringify(newSettings));
+
+    window.dispatchEvent(
+      new CustomEvent("graph_settings_changed", { detail: { id: id } })
+    );
+  };
+
   const getDefault = (prop: string) => {
     let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
+    console.log(settings);
     return settings[prop];
   };
 
@@ -307,6 +323,13 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
           defaultChecked={getDefault("start_end_labels")}
         />
         <label>start/end of line labels</label>
+        <input
+          type="range"
+          name="line_width"
+          onChange={changeRange}
+          defaultValue={getDefault("start_end_labels")}
+        />
+        <label>train line width</label>
       </div>
       <div className={styles.map_settings_column}></div>
     </div>
