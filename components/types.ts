@@ -71,7 +71,10 @@ const createTrain = (id: string, startTime: Date, stations: Array<stationIdent>,
   }
 }
 
+type MapSettings = Object;
+
 export {
   createTimetable, defaultTimeTable, createStation, createTrain,
 }
 export type { Station, stationIdent, Train, TrainWithTrips, Timetable }
+export type {MapSettings}
