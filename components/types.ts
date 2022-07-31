@@ -10,6 +10,7 @@ interface Train {
   startTime: Date,
   stations: Array<stationIdent>,
   durations: Array<number>,
+  color: string,
 }
 
 interface TrainWithTrips extends Train {
@@ -55,7 +56,7 @@ const createTrip = (A: stationIdent, B: stationIdent, duration: number): Trip =>
 }
 
 
-const createTrain = (id: string, startTime: Date, stations: Array<stationIdent>, durations: Array<number>): TrainWithTrips => {
+const createTrain = (id: string, startTime: Date, stations: Array<stationIdent>, durations: Array<number>, color: string): TrainWithTrips => {
   let trips = []
   for (let i = 0; i < durations.length; i++) {
     trips.push(createTrip(stations[i], stations[i + 1], durations[i]))
@@ -66,6 +67,7 @@ const createTrain = (id: string, startTime: Date, stations: Array<stationIdent>,
     stations: stations,
     durations: durations,
     trips: trips,
+    color: color,
   }
 }
 
