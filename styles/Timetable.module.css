@@ -167,6 +167,10 @@
   align-items: center;
 }
 
+.trainHead input[type="color"] {
+  width: 50px;
+}
+
 .short {
   width: 70px;
   font-size: 18px;

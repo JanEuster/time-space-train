@@ -192,7 +192,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     if (e.target.value.length > 0) {
       let newId = e.target.value;
       try {
-        let newTrain = createTrain(newId, startTime, stations, durations);
+        let newTrain = createTrain(newId, startTime, stations, durations, color);
         setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
       }
       catch (err) {
@@ -216,7 +216,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
       }
       let index = table.trains.indexOf(train);
       try {
-        let newTrain = createTrain(id, newStartTime, stations, durations);
+        let newTrain = createTrain(id, newStartTime, stations, durations, train.color);
         setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
       }
       catch (err) {
@@ -230,7 +230,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     }
   }
   const setTrainStations = (stations: stationIdent[], durations: number[]) => {
-    let newTrain = createTrain(id, train.startTime, stations, durations);
+    let newTrain = createTrain(id, train.startTime, stations, durations, train.color);
     setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
   }
 
@@ -255,6 +255,12 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     return time
   }
 
+  const changeTrainColor = (e: ChangeEvent<HTMLInputElement>) => {
+    let color: string = e.target.value;
+    let newTrain = createTrain(id, train.startTime, stations, durations, color);
+    setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
+  }
+
   useEffect(() => {
     ;
     let stations = [];
@@ -274,6 +280,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
         <input defaultValue={id} onBlur={changeTrainId} />
         <input defaultValue={format(new Date(startTime), "HH:mm")} onChange={changeTrainStartTime}
           onBlur={(e) => changeTrainStartTime(e, true)} className={styles2.short} />
+        <input type="color" defaultValue="#83C3D8" className={styles2.short} onChange={changeTrainColor}/>
         <FontAwesomeIcon icon={faSquareMinus} className={styles.listIcon} onClick={removeTrain} />
       </div>
       <div className={styles2.trainSubHead}>
@@ -295,7 +302,7 @@ const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable })
   let trains = table.trains;
 
   const addTrain = () => {
-    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [])])
+    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [], "#83C3D8")])
   }
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
@@ -324,7 +331,7 @@ const Table = () => {
   }
   useEffect(() => {
     let defaultStations: Array<Station> = [createStation("A Station", "A"), createStation("B Station", "B")];
-    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70])];
+    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70], "#83C3D8")];
     // first time load tables data
     let tables = JSON.parse(localStorage.getItem("tables"));
     for (let i = 0; i < tables.length; i++) {
