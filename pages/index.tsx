@@ -52,7 +52,7 @@ export default function Home() {
 
   // get tables cookie data on load
   useEffect(() => {
-    setList(JSON.parse(localStorage.getItem("tables")) ?? [{ title: "welcome", id: 0 }]);
+    setList(JSON.parse(localStorage.getItem("tables")) ?? []);
     setMinId(JSON.parse(localStorage.getItem("tablesMinID")) ?? 0);
 
     return () => {

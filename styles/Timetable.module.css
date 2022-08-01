@@ -180,9 +180,14 @@
   height: 100%;
 }
 
-.stationSelect label {
+.routeStations label {
   font-size: 18px;
   margin-left: 8px;
+}
+
+.stationStopDuration {
+  width: 30px;
+  text-align: right;
 }
 
 .routeDuration {
