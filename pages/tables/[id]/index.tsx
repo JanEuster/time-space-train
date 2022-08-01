@@ -115,21 +115,34 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
   const setTrainStationIdents = (idents: stationIdent[]) => {
     setTrainStations(
       idents,
-      train.durations
+      train.durations,
+      train.stopDurations,
     );
   }
   const setTrainStationDurations = (durations: number[]) => {
     setTrainStations(
       train.stations,
-      durations
+      durations,
+      train.stopDurations,
     );
   }
 
+  const setTrainStationStopDurations = (stopDurations: number[]) => {
+    console.log(stopDurations)
+    setTrainStations(
+      train.stations,
+      train.durations,
+      stopDurations,
+    );
+  }
   const changeTSIdent = (e: ChangeEvent<HTMLSelectElement>) => {
     setTrainStationIdents([...train.stations.slice(0, tsIndex), e.target.value, ...train.stations.slice(tsIndex + 1)])
   }
   const changeDuration = (e: ChangeEvent<HTMLInputElement>) => {
     setTrainStationDurations([...train.durations.slice(0, tsIndex), Number(e.target.value), ...train.durations.slice(tsIndex + 1)])
+  }
+  const changeStopDuration = (e: ChangeEvent<HTMLInputElement>) => {
+    setTrainStationStopDurations([...train.stopDurations.slice(0, tsIndex), Number(e.target.value), ...train.stopDurations.slice(tsIndex + 1)])
   }
   const removeStation = () => {
     // same trick as with removeTrain
@@ -167,6 +180,8 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
             </select>
             <label>{stationName}</label>
           </div>
+          <input defaultValue={train.stopDurations[index]} onChange={changeStopDuration} className={styles2.stationStopDuration}/>
+          <label>min</label>
           <FontAwesomeIcon icon={faSquareMinus} className={styles2.icon} onClick={removeStation} />
         </li>
       </div>
@@ -182,7 +197,7 @@ const TrainStation = ({ index, ident, time, train, setTrainStations, allStations
 }
 
 const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function, table: Timetable }) => {
-  let { id, startTime, stations, durations } = train;
+  let { id, startTime, stations, durations, stopDurations, color } = train;
   let trainIndex = table.trains.indexOf(train);
   const [route, setRoute] = useState([]);
 
@@ -192,7 +207,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     if (e.target.value.length > 0) {
       let newId = e.target.value;
       try {
-        let newTrain = createTrain(newId, startTime, stations, durations, color);
+        let newTrain = createTrain(newId, startTime, stations, durations, stopDurations, color);
         setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
       }
       catch (err) {
@@ -216,7 +231,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
       }
       let index = table.trains.indexOf(train);
       try {
-        let newTrain = createTrain(id, newStartTime, stations, durations, train.color);
+        let newTrain = createTrain(id, newStartTime, stations, durations, stopDurations, color);
         setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
       }
       catch (err) {
@@ -229,8 +244,8 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
       }
     }
   }
-  const setTrainStations = (stations: stationIdent[], durations: number[]) => {
-    let newTrain = createTrain(id, train.startTime, stations, durations, train.color);
+  const setTrainStations = (newStations: stationIdent[], newDurations: number[], newStopDurations: number[]) => {
+    let newTrain = createTrain(id, train.startTime, newStations, newDurations, newStopDurations, color);
     setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
   }
 
@@ -244,7 +259,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
   }
 
   const addTrainStation = () => {
-    setTrainStations([...stations, table.stations[0].ident], [...durations, 0])
+    setTrainStations([...stations, table.stations[0].ident], [...durations, 60], [...stopDurations, 1])
   }
 
   const addAllMinutes = (index: number): Date => {
@@ -257,7 +272,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
 
   const changeTrainColor = (e: ChangeEvent<HTMLInputElement>) => {
     let color: string = e.target.value;
-    let newTrain = createTrain(id, train.startTime, stations, durations, color);
+    let newTrain = createTrain(id, train.startTime, stations, durations, stopDurations, color);
     setTrains([...table.trains.slice(0, trainIndex), newTrain, ...table.trains.slice(trainIndex + 1)]);
   }
 
@@ -302,7 +317,7 @@ const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable })
   let trains = table.trains;
 
   const addTrain = () => {
-    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [], "#83C3D8")])
+    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [], [], "#83C3D8")])
   }
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (
@@ -331,7 +346,7 @@ const Table = () => {
   }
   useEffect(() => {
     let defaultStations: Array<Station> = [createStation("A Station", "A"), createStation("B Station", "B")];
-    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70], "#83C3D8")];
+    let defaultTrains: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70], [3, 10], "#83C3D8")];
     // first time load tables data
     let tables = JSON.parse(localStorage.getItem("tables"));
     for (let i = 0; i < tables.length; i++) {
