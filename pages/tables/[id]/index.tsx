@@ -266,6 +266,7 @@ const Train = ({ train, setTrains, table }: { train: Train, setTrains: Function,
     let time = new Date(startTime);
     for (let i = 0; i < index; i++) {
       time = addMinutes(time, durations[i]);
+      time = addMinutes(time, stopDurations[i]);
     }
     return time
   }
@@ -317,7 +318,7 @@ const Trains = ({ setTrains, table }: { setTrains: Function, table: Timetable })
   let trains = table.trains;
 
   const addTrain = () => {
-    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [], [], [], "#83C3D8")])
+    setTrains([...trains, createTrain("TRAIN 1000", new Date("2000.01.01 06:24:00"), [table.stations[0].ident, table.stations[1].ident], [20], [3, 5], "#83C3D8")])
   }
   // let ttt: Array<Train> = [createTrain("ICE1006", new Date('2000.01.01 06:24:00'), ["A", "B"], [70, 30])]
   return (

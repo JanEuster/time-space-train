@@ -188,16 +188,13 @@ class TSTGraph {
 
       // trains
       ctx.setLineDash([]);
-      ctx.lineWidth = lineWidth;
       for (let i = 0; i < timetable.trains.length; i++) {
         let train = timetable.trains[i];
-        ctx.strokeStyle = train.color;
         let time = train.startTime;
 
         // line
-        let firstPos = { x: 0, y: 0 };
-        let lastPos = { x: 0, y: 0 };
-        ctx.beginPath();
+        let posArr: {x: number, y: number}[] = [];
+        let lastPos: {x: number, y: number} = {x: 0, y: 0};
         for (let j = 0; j < train.stations.length; j++) {
           let station = train.stations[j];
           // calculate time as decimal 0-1 to multiply with maxTimeWidth(23:99)
@@ -207,37 +204,46 @@ class TSTGraph {
                 (1 / 60) * Number(format(new Date(time), "mm")))) /
             24;
           let y = stationHeights[station];
-          if (j == 0) {
-            ctx.moveTo(x, y);
-            firstPos.x = x;
-            firstPos.y = y + config.fontSize / 3;
-          } else {
+          if (j > 0) {
+            ctx.strokeStyle = train.color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath(); 
+            ctx.moveTo(lastPos.x, lastPos.y);
             ctx.lineTo(x, y);
+
+            ctx.stroke();
+            ctx.closePath();
           }
 
-          if (j < train.stations.length - 1) {
-            time = addMinutes(new Date(time), train.durations[j]);
-          } else {
-            lastPos.x = x;
-            lastPos.y = y + config.fontSize / 3;
-          }
-        }
-        ctx.stroke();
-        ctx.closePath();
-
-        // station dots
-        time = train.startTime;
-        for (let j = 0; j < train.stations.length; j++) {
-          let station = train.stations[j];
-          // calculate time as decimal 0-1 to multiply with maxTimeWidth(23:99)
-          let x =
+          let arrX = x;
+          time = addMinutes(new Date(time), train.stopDurations[j]);
+          let depX =
             (maxTimeWidth *
               (Number(format(new Date(time), "HH")) +
                 (1 / 60) * Number(format(new Date(time), "mm")))) /
             24;
-          let y = stationHeights[station];
+
+          x = depX;
+          lastPos = {x: x, y: y};
+          posArr.push(lastPos);
+
+          ctx.lineWidth = config.fontSize/2;
+          ctx.strokeStyle = "black";
+          ctx.beginPath(); 
+          ctx.moveTo(arrX, lastPos.y);
+          ctx.lineTo(depX, lastPos.y);
+
+          ctx.stroke();
+          ctx.closePath();
+
           ctx.fillRect(
-            x - config.fontSize / 4,
+            arrX - config.fontSize / 4,
+            y - config.fontSize / 4,
+            config.fontSize / 2,
+            config.fontSize / 2
+          );
+          ctx.fillRect(
+            depX - config.fontSize / 4,
             y - config.fontSize / 4,
             config.fontSize / 2,
             config.fontSize / 2
@@ -248,26 +254,28 @@ class TSTGraph {
           }
         }
 
+
         // train label
         if (startEndLabels) {
+          console.log(train, posArr)
           ctx.fillStyle = train.color;
           ctx.font = `${(2 / 3) * config.fontSize}px Arial black`;
           let trainLabelWidth = ctx.measureText(train.id).width;
           ctx.fillRect(
-            firstPos.x - trainLabelWidth / 2 - 5,
-            firstPos.y - (2 / 3) * config.fontSize,
+            posArr[0].x - trainLabelWidth / 2 - 5,
+            posArr[0].y - 2*config.fontSize/3 - 5,
             trainLabelWidth + 10,
             (2 / 3) * config.fontSize
           );
           ctx.fillRect(
             lastPos.x - trainLabelWidth / 2 - 5,
-            lastPos.y - (2 / 3) * config.fontSize,
+            lastPos.y + config.fontSize/3 - 5,
             trainLabelWidth + 10,
             (2 / 3) * config.fontSize
           );
           ctx.fillStyle = "black";
-          ctx.fillText(train.id, firstPos.x, firstPos.y - 2);
-          ctx.fillText(train.id, lastPos.x, lastPos.y - 2);
+          ctx.fillText(train.id, posArr[0].x, posArr[0].y - config.fontSize/3 + 2);
+          ctx.fillText(train.id, lastPos.x, lastPos.y + 2*config.fontSize/3 + 2);
         }
       }
     }
