@@ -193,8 +193,8 @@ class TSTGraph {
         let time = train.startTime;
 
         // line
-        let posArr: {x: number, y: number}[] = [];
-        let lastPos: {x: number, y: number} = {x: 0, y: 0};
+        let posArr: { x: number, y: number }[] = [];
+        let lastPos: { x: number, y: number } = { x: 0, y: 0 };
         for (let j = 0; j < train.stations.length; j++) {
           let station = train.stations[j];
           // calculate time as decimal 0-1 to multiply with maxTimeWidth(23:99)
@@ -207,10 +207,27 @@ class TSTGraph {
           if (j > 0) {
             ctx.strokeStyle = train.color;
             ctx.lineWidth = lineWidth;
-            ctx.beginPath(); 
-            ctx.moveTo(lastPos.x, lastPos.y);
-            ctx.lineTo(x, y);
+            ctx.beginPath();
+            ctx.moveTo(config.inset + lastPos.x, lastPos.y);
+            if (lastPos.x > x) {
+              // line until midnight
+              let tilMidnight = maxTimeWidth - lastPos.x
+              let scalar = tilMidnight / (tilMidnight + x);
+              let midnightY = lastPos.y - (lastPos.y - y) * scalar;
+              console.log(scalar, midnightY, y)
+              console.log(lastPos.x, tilMidnight, x)
+              ctx.lineTo(config.inset + maxTimeWidth, midnightY);
+              ctx.lineTo(config.width, midnightY);
 
+              // line from midnight
+              scalar = 1 - scalar
+              ctx.moveTo(0, midnightY);
+              ctx.lineTo(config.inset, midnightY);
+              ctx.lineTo(config.inset + x, y);
+
+            } else {
+              ctx.lineTo(config.inset + x, y);
+            }
             ctx.stroke();
             ctx.closePath();
           }
@@ -224,26 +241,26 @@ class TSTGraph {
             24;
 
           x = depX;
-          lastPos = {x: x, y: y};
+          lastPos = { x: x, y: y };
           posArr.push(lastPos);
 
-          ctx.lineWidth = config.fontSize/2;
+          ctx.lineWidth = config.fontSize / 2;
           ctx.strokeStyle = "black";
-          ctx.beginPath(); 
-          ctx.moveTo(arrX, lastPos.y);
-          ctx.lineTo(depX, lastPos.y);
+          ctx.beginPath();
+          ctx.moveTo(config.inset + arrX, lastPos.y);
+          ctx.lineTo(config.inset + depX, lastPos.y);
 
           ctx.stroke();
           ctx.closePath();
 
           ctx.fillRect(
-            arrX - config.fontSize / 4,
+            config.inset + arrX - config.fontSize / 4,
             y - config.fontSize / 4,
             config.fontSize / 2,
             config.fontSize / 2
           );
           ctx.fillRect(
-            depX - config.fontSize / 4,
+            config.inset + depX - config.fontSize / 4,
             y - config.fontSize / 4,
             config.fontSize / 2,
             config.fontSize / 2
@@ -262,20 +279,20 @@ class TSTGraph {
           ctx.font = `${(2 / 3) * config.fontSize}px Arial black`;
           let trainLabelWidth = ctx.measureText(train.id).width;
           ctx.fillRect(
-            posArr[0].x - trainLabelWidth / 2 - 5,
-            posArr[0].y - 2*config.fontSize/3 - 5,
+            config.inset + posArr[0].x - trainLabelWidth / 2 - 5,
+            posArr[0].y - 2 * config.fontSize / 3 - 5,
             trainLabelWidth + 10,
             (2 / 3) * config.fontSize
           );
           ctx.fillRect(
-            lastPos.x - trainLabelWidth / 2 - 5,
-            lastPos.y + config.fontSize/3 - 5,
+            config.inset + lastPos.x - trainLabelWidth / 2 - 5,
+            lastPos.y + config.fontSize / 3 - 5,
             trainLabelWidth + 10,
             (2 / 3) * config.fontSize
           );
           ctx.fillStyle = "black";
-          ctx.fillText(train.id, posArr[0].x, posArr[0].y - config.fontSize/3 + 2);
-          ctx.fillText(train.id, lastPos.x, lastPos.y + 2*config.fontSize/3 + 2);
+          ctx.fillText(train.id, config.inset + posArr[0].x, posArr[0].y - config.fontSize / 3 + 2);
+          ctx.fillText(train.id, config.inset + lastPos.x, lastPos.y + 2 * config.fontSize / 3 + 2);
         }
       }
     }
