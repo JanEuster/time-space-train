@@ -52,7 +52,7 @@ export default function Home() {
 
   // get tables cookie data on load
   useEffect(() => {
-    setList(JSON.parse(localStorage.getItem("tables")) ?? []);
+    setList(JSON.parse(localStorage.getItem("tables")) ?? [createTimetable(0, "welcome Timetable", [createStation("A Station", "AAA Hbf"), createStation("B Station", "BBB Central")], [createTrain("D 300", new Date('2000.01.01 06:24:00'), ["A", "B"], [70], [3, 10], "#83C3D8") ])]);
     setMinId(JSON.parse(localStorage.getItem("tablesMinID")) ?? 0);
 
     return () => {
