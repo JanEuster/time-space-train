@@ -300,6 +300,11 @@ class TSTGraph {
 }
 
 const MapSettings: React.FC<{ id: number }> = ({ id }) => {
+    let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
+    if (!settings) {
+      localStorage.setItem("mapSettings", JSON.stringify({}));
+    }
+
   const changeCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
     let prop = e.target.name;
     let newSettings: MapSettings = JSON.parse(
@@ -327,16 +332,8 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
 
   const getDefault = (prop: string) => {
     let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
-    console.log(settings);
     return settings[prop];
   };
-
-  useEffect(() => {
-    let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
-    if (!settings) {
-      localStorage.setItem("mapSettings", JSON.stringify({}));
-    }
-  });
 
   return (
     <div className={styles.map_settings}>
@@ -352,7 +349,7 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
           type="range"
           name="line_width"
           onChange={changeRange}
-          defaultValue={getDefault("start_end_labels")}
+          defaultValue={getDefault("line_width")}
         />
         <label>train line width</label>
       </div>
