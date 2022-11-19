@@ -300,10 +300,9 @@ class TSTGraph {
 }
 
 const MapSettings: React.FC<{ id: number }> = ({ id }) => {
-    let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
-    if (!settings) {
-      localStorage.setItem("mapSettings", JSON.stringify({}));
-    }
+  const [labelsDefault, setLabelsDefault] = useState(true);
+  const [lineWidthDefault, setLineWidthDefault] = useState(4);
+
 
   const changeCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
     let prop = e.target.name;
@@ -335,6 +334,16 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
     return settings[prop];
   };
 
+  useEffect(() => {
+    let settings: MapSettings = JSON.parse(localStorage.getItem("mapSettings"));
+    if (!settings) {
+      localStorage.setItem("mapSettings", JSON.stringify({}));
+    }
+    setLabelsDefault(getDefault("start_end_labels"));
+    setLineWidthDefault(getDefault("line_width"));
+  }, [])
+  
+
   return (
     <div className={styles.map_settings}>
       <div className={styles.map_settings_column}>
@@ -342,14 +351,14 @@ const MapSettings: React.FC<{ id: number }> = ({ id }) => {
           type="checkbox"
           name="start_end_labels"
           onChange={changeCheckbox}
-          defaultChecked={getDefault("start_end_labels")}
+          defaultChecked={labelsDefault}
         />
         <label>start/end of line labels</label>
         <input
           type="range"
           name="line_width"
           onChange={changeRange}
-          defaultValue={getDefault("line_width")}
+          defaultValue={lineWidthDefault}
         />
         <label>train line width</label>
       </div>
